@@ -2,18 +2,24 @@ from http import HTTPStatus
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from madr.database import get_session
 from madr.models import User
-from madr.schemas import Message, UserPublic, UserSchema
-from madr.security import get_password_hash, sanitize_string
+from madr.schemas import Message, Token, UserPublic, UserSchema
+from madr.security import (
+    create_access_token,
+    get_password_hash,
+    sanitize_string,
+)
 
 app = FastAPI()
 
 
 T_Session = Annotated[Session, Depends(get_session)]
+T_OAuth2Form = Annotated[OAuth2PasswordRequestForm, Depends()]
 
 
 @app.get('/', status_code=HTTPStatus.OK, response_model=Message)
@@ -58,3 +64,15 @@ def create_user(user: UserSchema, session: T_Session):
     session.refresh(db_user)
 
     return db_user
+
+
+@app.post('/auth/token', response_model=Token)
+def login_for_access_token(form_data: T_OAuth2Form, session: T_Session):
+    user = session.scalar(select(User).where(User.email == form_data.username))
+
+    # TO-DO ---> Caso de erro 1: usuário inexistente
+    # TO-DO ---> Caso de erro 2: senha incorreta
+
+    access_token = create_access_token({'sub': user.email})
+
+    return {'access_token': access_token, 'token_type': 'bearer'}
