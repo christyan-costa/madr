@@ -11,6 +11,7 @@ from madr.models import User
 from madr.schemas import Message, Token, UserPublic, UserSchema
 from madr.security import (
     create_access_token,
+    get_current_user,
     get_password_hash,
     sanitize_string,
 )
@@ -20,6 +21,7 @@ app = FastAPI()
 
 T_Session = Annotated[Session, Depends(get_session)]
 T_OAuth2Form = Annotated[OAuth2PasswordRequestForm, Depends()]
+T_CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
 @app.get('/', status_code=HTTPStatus.OK, response_model=Message)
@@ -76,3 +78,25 @@ def login_for_access_token(form_data: T_OAuth2Form, session: T_Session):
     access_token = create_access_token({'sub': user.email})
 
     return {'access_token': access_token, 'token_type': 'bearer'}
+
+
+@app.put('/conta/{user_id}', response_model=UserPublic)
+def update_user(
+    user: UserSchema,
+    user_id: int,
+    session: T_Session,
+    current_user: T_CurrentUser,
+):
+    if current_user.id != user_id:
+        raise HTTPException(
+            status_code=HTTPStatus.FORBIDDEN, detail='Não autorizado'
+        )
+
+    current_user.username = user.username
+    current_user.email = user.email
+    current_user.password = get_password_hash(user.password)
+
+    session.commit()
+    session.refresh(current_user)
+
+    return current_user
