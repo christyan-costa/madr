@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from madr.database import get_session
 from madr.models import User
 from madr.schemas import Message, UserPublic, UserSchema
-from madr.security import get_password_hash
+from madr.security import get_password_hash, sanitize_string
 
 app = FastAPI()
 
@@ -44,11 +44,14 @@ def create_user(user: UserSchema, session: T_Session):
                 detail='conta já consta no MADR',
             )
 
-    # Aplicar hash na senha
+    # Aplicar hash à senha
     hashed_password = get_password_hash(user.password)
 
+    # Sanitizar nome
+    sanitized_username = sanitize_string(user.username)
+
     db_user = User(
-        username=user.username, email=user.email, password=hashed_password
+        username=sanitized_username, email=user.email, password=hashed_password
     )
     session.add(db_user)
     session.commit()
