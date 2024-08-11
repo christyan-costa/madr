@@ -14,6 +14,7 @@ from madr.security import (
     get_current_user,
     get_password_hash,
     sanitize_string,
+    verify_password,
 )
 
 app = FastAPI()
@@ -68,18 +69,6 @@ def create_user(user: UserSchema, session: T_Session):
     return db_user
 
 
-@app.post('/auth/token', response_model=Token)
-def login_for_access_token(form_data: T_OAuth2Form, session: T_Session):
-    user = session.scalar(select(User).where(User.email == form_data.username))
-
-    # TO-DO ---> Caso de erro 1: usuário inexistente
-    # TO-DO ---> Caso de erro 2: senha incorreta
-
-    access_token = create_access_token({'sub': user.email})
-
-    return {'access_token': access_token, 'token_type': 'bearer'}
-
-
 @app.put('/conta/{user_id}', response_model=UserPublic)
 def update_user(
     user: UserSchema,
@@ -100,3 +89,26 @@ def update_user(
     session.refresh(current_user)
 
     return current_user
+
+
+@app.post('/auth/token', response_model=Token)
+def login_for_access_token(form_data: T_OAuth2Form, session: T_Session):
+    user = session.scalar(select(User).where(User.email == form_data.username))
+
+    # Erro 1: usuário inexistente
+    if not user:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail='Email ou senha incorretos',
+        )
+
+    # Erro 2: senha incorreta
+    if not verify_password(form_data.password, user.password):
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail='Email ou senha incorretos',
+        )
+
+    access_token = create_access_token({'sub': user.email})
+
+    return {'access_token': access_token, 'token_type': 'bearer'}
