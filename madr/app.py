@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from madr.database import get_session
 from madr.models import User
 from madr.schemas import Message, UserPublic, UserSchema
+from madr.security import get_password_hash
 
 app = FastAPI()
 
@@ -25,7 +26,7 @@ def create_user(user: UserSchema, session: T_Session):
     db_user = session.scalar(
         select(User).where(
             (User.username == user.username) | (User.email == user.email)
-            )
+        )
     )
 
     if db_user:
@@ -33,19 +34,21 @@ def create_user(user: UserSchema, session: T_Session):
             # Erro: username já existe
             raise HTTPException(
                 status_code=HTTPStatus.BAD_REQUEST,
-                detail='conta já consta no MADR'
+                detail='conta já consta no MADR',
             )
 
         if db_user.email == user.email:
             # Erro: email já existe
             raise HTTPException(
                 status_code=HTTPStatus.BAD_REQUEST,
-                detail='conta já consta no MADR'
+                detail='conta já consta no MADR',
             )
-    # TO-DO: Aplicar Hash na senha
+
+    # Aplicar hash na senha
+    hashed_password = get_password_hash(user.password)
 
     db_user = User(
-        username=user.username, email=user.email, password=user.password
+        username=user.username, email=user.email, password=hashed_password
     )
     session.add(db_user)
     session.commit()

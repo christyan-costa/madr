@@ -652,6 +652,21 @@ files = [
 test = ["enum34", "ipaddress", "mock", "pywin32", "wmi"]
 
 [[package]]
+name = "pwdlib"
+version = "0.2.0"
+description = "Modern password hashing for Python"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pwdlib-0.2.0-py3-none-any.whl", hash = "sha256:be53812012ab66795a57ac9393a59716ae7c2b60841ed453eb1262017fdec144"},
+    {file = "pwdlib-0.2.0.tar.gz", hash = "sha256:b1bdafc064310eb6d3d07144a210267063ab4f45ac73a97be948e6589f74e861"},
+]
+
+[package.extras]
+argon2 = ["argon2-cffi (==23.1.0)"]
+bcrypt = ["bcrypt (==4.1.2)"]
+
+[[package]]
 name = "pydantic"
 version = "2.8.2"
 description = "Data validation using Python type hints"
@@ -1415,4 +1430,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "554f5b3f8fcf8f76ecf171069f73b06f2453c46f2f19eb68999a3a3417bb74d6"
+content-hash = "78edb38e8605a09c6ff8415938b0295050e29acbd637f36e7b25a4a47bc65be4"
