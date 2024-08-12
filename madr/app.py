@@ -91,6 +91,19 @@ def update_user(
     return current_user
 
 
+@app.delete('/conta/{user_id}', response_model=Message)
+def delete_user(user_id: int, current_user: T_CurrentUser, session: T_Session):
+    if current_user.id != user_id:
+        raise HTTPException(
+            status_code=HTTPStatus.FORBIDDEN, detail='Não autorizado'
+        )
+
+    session.delete(current_user)
+    session.commit()
+
+    return {'message': 'Conta deletada com sucesso'}
+
+
 @app.post('/auth/token', response_model=Token)
 def login_for_access_token(form_data: T_OAuth2Form, session: T_Session):
     user = session.scalar(select(User).where(User.email == form_data.username))
