@@ -42,14 +42,14 @@ def create_user(user: UserSchema, session: T_Session):
         if db_user.username == user.username:
             # Erro: username já existe
             raise HTTPException(
-                status_code=HTTPStatus.BAD_REQUEST,
+                status_code=HTTPStatus.CONFLICT,
                 detail='conta já consta no MADR',
             )
 
         if db_user.email == user.email:
             # Erro: email já existe
             raise HTTPException(
-                status_code=HTTPStatus.BAD_REQUEST,
+                status_code=HTTPStatus.CONFLICT,
                 detail='conta já consta no MADR',
             )
 
