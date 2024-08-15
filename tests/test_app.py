@@ -29,23 +29,25 @@ def test_create_user_success(client):
     assert 'password' not in data
 
 
-def test_create_user_existing_username(client):
-    # First, create a user
-    client.post(
+def test_create_user_existing_username(client, user):
+    response = client.post(
         '/conta',
         json={
-            'username': 'existinguser',
-            'email': 'existing@example.com',
+            'username': user.username,
+            'email': 'newemail@example.com',
             'password': 'securepassword',
         },
     )
+    assert response.status_code == HTTPStatus.CONFLICT
+    assert response.json() == {'detail': 'conta já consta no MADR'}
 
-    # Try to create another user with the same username
+
+def test_create_user_existing_email(client, user):
     response = client.post(
         '/conta',
         json={
             'username': 'existinguser',
-            'email': 'newemail@example.com',
+            'email': user.email,
             'password': 'securepassword',
         },
     )
