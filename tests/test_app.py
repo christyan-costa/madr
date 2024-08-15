@@ -55,25 +55,85 @@ def test_create_user_existing_email(client, user):
     assert response.json() == {'detail': 'conta já consta no MADR'}
 
 
-def test_create_user_existing_email(client):
-    # First, create a user
-    client.post(
-        '/conta',
+def test_update_user_with_wrong_id(client, user, token):
+    response = client.put(
+        f'/conta/{user.id + 1}',
+        headers={'Authorization': f'Bearer {token}'},
         json={
-            'username': 'anotheruser',
-            'email': 'existing_email@example.com',
-            'password': 'securepassword',
+            'username': 'another_username',
+            'email': 'another@email.com',
+            'password': 'another_password',
         },
     )
 
-    # Try to create another user with the same username
-    response = client.post(
-        '/conta',
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.json()['detail'] == 'Não autorizado'
+
+
+def test_update_user_with_correct_id(client, user, token):
+    response = client.put(
+        f'/conta/{user.id}',
+        headers={'Authorization': f'Bearer {token}'},
         json={
-            'username': 'existinguser',
-            'email': 'existing_email@example.com',
-            'password': 'securepassword',
+            'username': 'another_username',
+            'email': 'another@email.com',
+            'password': 'another_password',
         },
     )
-    assert response.status_code == HTTPStatus.CONFLICT
-    assert response.json() == {'detail': 'conta já consta no MADR'}
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {
+        'username': 'another_username',
+        'email': 'another@email.com',
+        'id': user.id,
+    }
+
+
+def test_delete_user_with_wrong_id(client, user, token):
+    response = client.delete(
+        f'/conta/{user.id + 1}',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.json()['detail'] == 'Não autorizado'
+
+
+def test_delete_user_with_correct_id(client, user, token):
+    response = client.delete(
+        f'/conta/{user.id}',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {'message': 'Conta deletada com sucesso'}
+
+
+def test_get_token(client, user):
+    response = client.post(
+        '/auth/token',
+        data={'username': user.email, 'password': user.clean_password},
+    )
+    assert response.status_code == HTTPStatus.OK
+    assert 'access_token' in response.json()
+    assert 'token_type' in response.json()
+
+
+def test_get_token_with_wrong_email(client, user):
+    response = client.post(
+        '/auth/token',
+        data={'username': 'wrong@email.com', 'password': user.clean_password},
+    )
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json()['detail'] == 'Email ou senha incorretos'
+
+
+def test_get_token_with_wrong_password(client, user):
+    response = client.post(
+        '/auth/token',
+        data={'username': user.email, 'password': 'wrong_password'},
+    )
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json()['detail'] == 'Email ou senha incorretos'
