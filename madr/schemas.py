@@ -26,3 +26,13 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: str
+
+
+class BookSchema(BaseModel):
+    year: int
+    title: str
+    romancista_id: int
+
+
+class BookPublic(BookSchema):
+    id: int
