@@ -7,8 +7,15 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from madr.database import get_session
-from madr.models import User
-from madr.schemas import Message, Token, UserPublic, UserSchema
+from madr.models import Book, User
+from madr.schemas import (
+    BookPublic,
+    BookSchema,
+    Message,
+    Token,
+    UserPublic,
+    UserSchema,
+)
 from madr.security import (
     create_access_token,
     get_current_user,
@@ -125,3 +132,34 @@ def login_for_access_token(form_data: T_OAuth2Form, session: T_Session):
     access_token = create_access_token({'sub': user.email})
 
     return {'access_token': access_token, 'token_type': 'bearer'}
+
+
+@app.post('/livro', response_model=BookPublic)
+def add_book(
+    book: BookSchema, current_user: T_CurrentUser, session: T_Session
+):
+    sanitized_title = sanitize_string(book.title)
+
+    db_book = session.scalar(
+        select(Book).where(
+            (Book.title == sanitized_title)
+            & (Book.year == book.year)
+            & (Book.romancista_id == book.romancista_id)
+        )
+    )
+
+    if db_book:
+        # Erro: já consta no MADR!
+        ...
+
+    db_book = Book(
+        title=sanitize_string(book.title),
+        year=book.year,
+        romancista_id=book.romancista_id,
+    )
+
+    session.add(db_book)
+    session.commit()
+    session.refresh(db_book)
+
+    return db_book
