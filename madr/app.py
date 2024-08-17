@@ -7,11 +7,13 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from madr.database import get_session
-from madr.models import Book, User
+from madr.models import Book, Romancista, User
 from madr.schemas import (
     BookPublic,
     BookSchema,
     Message,
+    RomancistaPublic,
+    RomancistaSchema,
     Token,
     UserPublic,
     UserSchema,
@@ -163,3 +165,28 @@ def add_book(
     session.refresh(db_book)
 
     return db_book
+
+
+@app.post('/romancista', response_model=RomancistaPublic)
+def add_romancista(
+    romanc: RomancistaSchema, current_user: T_CurrentUser, session: T_Session
+):
+    romanc_name = sanitize_string(romanc.name)
+
+    db_romancista = session.scalar(
+        select(Romancista).where((Romancista.name == romanc_name))
+    )
+
+    if db_romancista:
+        # Erro: já consta no MADR!
+        ...
+
+    db_romancista = Romancista(
+        name=romanc_name
+    )
+
+    session.add(db_romancista)
+    session.commit()
+    session.refresh(db_romancista)
+
+    return db_romancista
