@@ -36,3 +36,11 @@ class BookSchema(BaseModel):
 
 class BookPublic(BookSchema):
     id: int
+
+
+class RomancistaSchema(BaseModel):
+    name: str
+
+
+class RomancistaPublic(RomancistaSchema):
+    id: int

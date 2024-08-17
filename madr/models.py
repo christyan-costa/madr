@@ -1,4 +1,5 @@
-from sqlalchemy.orm import Mapped, mapped_column, registry
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, registry, relationship
 
 table_registry = registry()
 
@@ -13,18 +14,6 @@ class User:
     email: Mapped[str] = mapped_column(unique=True)
 
 
-# @table_registry.mapped_as_dataclass
-# class Romancista:
-#     __tablename__ = 'romancistas'
-
-#     id: Mapped[int] = mapped_column(init=False, primary_key=True)
-#     name: Mapped[int] = mapped_column(unique=True)
-
-#     # books: Mapped[list['Book']] = relationship(
-#     #     init=False, back_populates='book', cascade='all, delete-orphan'
-#     # )
-
-
 @table_registry.mapped_as_dataclass
 class Book:
     __tablename__ = 'books'
@@ -33,8 +22,20 @@ class Book:
     year: Mapped[str]
     title: Mapped[str]
 
-    romancista_id: Mapped[int]  # = mapped_column(ForeignKey('romancistas.id'))
+    romancista_id: Mapped[int] = mapped_column(ForeignKey('romancistas.id'))
 
-    # romancista: Mapped[Romancista] = relationship(
-    #     init=False, back_populates='books'
-    # )
+    romancistas: Mapped['Romancista'] = relationship(
+        init=False, back_populates='livros'
+    )
+
+
+@table_registry.mapped_as_dataclass
+class Romancista:
+    __tablename__ = 'romancistas'
+
+    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    name: Mapped[int] = mapped_column(unique=True)
+
+    livros: Mapped[list['Book']] = relationship(
+        init=False, back_populates='romancistas', cascade='all, delete-orphan'
+    )
