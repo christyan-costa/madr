@@ -1,6 +1,7 @@
+from http import HTTPStatus
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -22,19 +23,16 @@ def add_book(
     sanitized_title = sanitize_string(book.title)
 
     db_book = session.scalar(
-        select(Book).where(
-            (Book.title == sanitized_title)
-            & (Book.year == book.year)
-            & (Book.romancista_id == book.romancista_id)
-        )
+        select(Book).where((Book.title == sanitized_title))
     )
 
     if db_book:
-        # Erro: já consta no MADR!
-        ...
+        raise HTTPException(
+            status_code=HTTPStatus.CONFLICT, detail='Livro já consta no MADR'
+        )
 
     db_book = Book(
-        title=sanitize_string(book.title),
+        title=sanitized_title,
         year=book.year,
         romancista_id=book.romancista_id,
     )
