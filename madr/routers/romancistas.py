@@ -1,3 +1,4 @@
+from http import HTTPStatus
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
@@ -21,7 +22,7 @@ T_Session = Annotated[Session, Depends(get_session)]
 T_CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
-@router.post('/', response_model=RomancistaPublic)
+@router.post('/', response_model=RomancistaPublic, status_code=HTTPStatus.CREATED)
 def add_romancista(
     romanc: RomancistaSchema, current_user: T_CurrentUser, session: T_Session
 ):
