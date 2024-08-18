@@ -1,13 +1,13 @@
 from http import HTTPStatus
-from typing import Annotated
+from typing import Annotated, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from madr.database import get_session
 from madr.models import Book, User
-from madr.schemas import BookPublic, BookSchema, BookUpdate, Message
+from madr.schemas import BookList, BookPublic, BookSchema, BookUpdate, Message
 from madr.security import get_current_user, sanitize_string
 
 router = APIRouter(prefix='/livro', tags=['livros'])
@@ -102,3 +102,26 @@ def get_book_by_id(book_id: int, session: T_Session):
         )
 
     return db_book
+
+
+@router.get('/', response_model=BookList)
+def list_books(  #  noqa
+    session: T_Session,
+    title: Optional[str] = Query(None),
+    year: Optional[int] = Query(None),
+    offset: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=20),
+):
+    if (title is None) and (year is None):
+        return {'livros': []}
+
+    query = select(Book)
+
+    if title:
+        query = query.filter(Book.title.contains(title))
+    if year:
+        query = query.filter(Book.year == year)
+
+    books = session.scalars(query.offset(offset).limit(limit)).all()
+
+    return {'livros': books}
