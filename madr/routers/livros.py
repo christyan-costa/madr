@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from madr.database import get_session
 from madr.models import Book, User
-from madr.schemas import BookPublic, BookSchema
+from madr.schemas import BookPublic, BookSchema, Message
 from madr.security import get_current_user, sanitize_string
 
 router = APIRouter(prefix='/livro', tags=['livros'])
@@ -42,3 +42,18 @@ def add_book(
     session.refresh(db_book)
 
     return db_book
+
+
+@router.delete('/{book_id}', response_model=Message)
+def delete_book(book_id: int, current_user: T_CurrentUser, session: T_Session):
+    db_book = session.scalar(select(Book).where((Book.id == book_id)))
+
+    if not db_book:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='Livro não consta no MADR'
+        )
+
+    session.delete(db_book)
+    session.commit()
+
+    return {'message': 'Livro deletado do MADR'}
