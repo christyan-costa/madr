@@ -66,7 +66,6 @@ def update_book(
     current_user: T_CurrentUser,
     session: T_Session,
 ):
-    
     db_book = session.scalar(
         select(Book).where(Book.title == sanitize_string(book.title))
     )
@@ -75,7 +74,6 @@ def update_book(
         raise HTTPException(
             status_code=HTTPStatus.CONFLICT, detail='Livro já consta no MADR'
         )
-
 
     db_book = session.scalar(select(Book).where((Book.id == book_id)))
 
@@ -90,5 +88,17 @@ def update_book(
     session.add(db_book)
     session.commit()
     session.refresh(db_book)
+
+    return db_book
+
+
+@router.get('/{book_id}', response_model=BookPublic)
+def get_book_by_id(book_id: int, session: T_Session):
+    db_book = session.scalar(select(Book).where(Book.id == book_id))
+
+    if not db_book:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='Livro não consta no MADR'
+        )
 
     return db_book
