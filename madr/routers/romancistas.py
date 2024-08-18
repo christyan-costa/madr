@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -33,8 +33,9 @@ def add_romancista(
     )
 
     if db_romancista:
-        # Erro: já consta no MADR!
-        ...
+        raise HTTPException(
+            status_code=HTTPStatus.CONFLICT, detail='Romancista já consta no MADR'
+        )
 
     db_romancista = Romancista(name=romanc_name)
 
