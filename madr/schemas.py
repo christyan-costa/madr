@@ -38,6 +38,12 @@ class BookPublic(BookSchema):
     id: int
 
 
+class BookUpdate(BaseModel):
+    year: int | None = None
+    title: str | None = None
+    romancista_id: int | None = None
+
+
 class RomancistaSchema(BaseModel):
     name: str
 
