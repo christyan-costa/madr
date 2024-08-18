@@ -61,3 +61,48 @@ def delete_romancista(
     session.commit()
 
     return {'message': 'Romancista deletado do MADR'}
+
+
+@router.patch(
+        '/{romancista_id}',
+        response_model=RomancistaPublic,
+        status_code=HTTPStatus.OK
+)
+def update_romancista(
+    romancista_id: int,
+    romancista: RomancistaSchema,
+    current_user: T_CurrentUser,
+    session: T_Session,
+):
+    db_romancista = session.scalar(
+        select(Romancista).where(
+            Romancista.name == sanitize_string(romancista.name)
+        )
+    )
+
+    if db_romancista:
+        raise HTTPException(
+            status_code=HTTPStatus.CONFLICT,
+            detail='Romancista já consta no MADR'
+        )
+
+    db_romancista = session.scalar(
+        select(Romancista).where(
+            Romancista.id == romancista_id
+        )
+    )
+
+    if not db_romancista:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND,
+            detail='Romancista não consta no MADR'
+        )
+
+
+    db_romancista.name = romancista.name
+
+    session.add(db_romancista)
+    session.commit()
+    session.refresh(db_romancista)
+
+    return db_romancista
