@@ -1,13 +1,18 @@
 from http import HTTPStatus
-from typing import Annotated
+from typing import Annotated, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from madr.database import get_session
 from madr.models import Romancista, User
-from madr.schemas import Message, RomancistaPublic, RomancistaSchema
+from madr.schemas import (
+    Message,
+    RomancistaList,
+    RomancistaPublic,
+    RomancistaSchema,
+)
 from madr.security import get_current_user, sanitize_string
 
 router = APIRouter(prefix='/romancista', tags=['romancistas'])
@@ -126,3 +131,20 @@ def get_romancista_by_id(
         )
 
     return db_romancista
+
+
+@router.get('/', status_code=HTTPStatus.OK, response_model=RomancistaList)
+def list_romancistas(
+    session: T_Session,
+    name: Optional[str] = Query(None),
+    offset: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=20),
+):
+    db_romancistas = session.scalars(
+        select(Romancista)
+        .where(Romancista.name.contains(name))
+        .offset(offset)
+        .limit(limit)
+    ).all()
+
+    return {'romancistas': db_romancistas}
