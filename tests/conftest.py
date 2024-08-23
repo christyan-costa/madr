@@ -6,7 +6,7 @@ from sqlalchemy.pool import StaticPool
 
 from madr.app import app
 from madr.database import get_session
-from madr.models import Book, User, table_registry
+from madr.models import Book, Romancista, User, table_registry
 from madr.security import get_password_hash, sanitize_string
 
 
@@ -87,3 +87,14 @@ def book_2(session):
     session.refresh(book)
 
     return book
+
+
+@pytest.fixture
+def romancista(session):
+    romancista = Romancista(name=sanitize_string('Clarice Lispector'))
+
+    session.add(romancista)
+    session.commit()
+    session.refresh(romancista)
+
+    return romancista
