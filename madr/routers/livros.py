@@ -16,7 +16,7 @@ T_Session = Annotated[Session, Depends(get_session)]
 T_CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
-@router.post('/', response_model=BookPublic)
+@router.post('/', response_model=BookPublic, status_code=HTTPStatus.CREATED)
 def add_book(
     book: BookSchema, current_user: T_CurrentUser, session: T_Session
 ):
@@ -59,21 +59,25 @@ def delete_book(book_id: int, current_user: T_CurrentUser, session: T_Session):
     return {'message': 'Livro deletado do MADR'}
 
 
-@router.patch('/{book_id}', response_model=BookPublic)
+@router.patch(
+    '/{book_id}', response_model=BookPublic, status_code=HTTPStatus.OK
+)
 def update_book(
     book_id: int,
     book: BookUpdate,
     current_user: T_CurrentUser,
     session: T_Session,
 ):
-    db_book = session.scalar(
-        select(Book).where(Book.title == sanitize_string(book.title))
-    )
-
-    if db_book:
-        raise HTTPException(
-            status_code=HTTPStatus.CONFLICT, detail='Livro já consta no MADR'
+    if book.title:
+        db_book = session.scalar(
+            select(Book).where(Book.title == sanitize_string(book.title))
         )
+
+        if db_book:
+            raise HTTPException(
+                status_code=HTTPStatus.CONFLICT,
+                detail='Livro já consta no MADR',
+            )
 
     db_book = session.scalar(select(Book).where((Book.id == book_id)))
 
