@@ -91,7 +91,7 @@ def book_2(session):
 
 @pytest.fixture
 def romancista(session):
-    romancista = Romancista(name='Clarice Lispector')
+    romancista = Romancista(name=sanitize_string('Clarice Lispector'))
 
     session.add(romancista)
     session.commit()
