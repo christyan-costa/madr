@@ -66,10 +66,10 @@ def test_get_busca_romancista_por_filtro(client, token):
     response = client.get('/romancista/?name=a')
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json() ==     {
-        "romancistas": [
-            {"name": "clarice lispector", "id": 1},
-            {"name": "manuel bandeira", "id": 2},
-            {"name": "paulo leminski", "id": 3}
+    assert response.json() == {
+        'romancistas': [
+            {'name': 'clarice lispector', 'id': 1},
+            {'name': 'manuel bandeira', 'id': 2},
+            {'name': 'paulo leminski', 'id': 3},
         ]
     }
