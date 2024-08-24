@@ -1,3 +1,4 @@
+import factory
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -108,3 +109,10 @@ def romancista(session):
 # def romancistas(session):
 #     ...
 #     # Usar factory boy para criação de 3 romancistas
+
+
+class RomancistaFactory(factory.Factory):
+    class Meta:
+        model = Romancista
+
+    name = factory.Sequence(lambda n: f'romancista{n}')
