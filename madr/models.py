@@ -19,7 +19,7 @@ class Book:
     __tablename__ = 'books'
 
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
-    year: Mapped[str]
+    year: Mapped[int]
     title: Mapped[str]
 
     romancista_id: Mapped[int] = mapped_column(ForeignKey('romancistas.id'))

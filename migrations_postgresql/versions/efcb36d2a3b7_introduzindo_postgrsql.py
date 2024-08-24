@@ -40,7 +40,7 @@ def upgrade() -> None:
     op.create_table(
         'books',
         sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('year', sa.String(), nullable=False),
+        sa.Column('year', sa.Integer(), nullable=False),
         sa.Column('title', sa.String(), nullable=False),
         sa.Column('romancista_id', sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(
