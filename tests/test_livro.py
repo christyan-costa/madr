@@ -1,7 +1,9 @@
 from http import HTTPStatus
 
+from tests.conftest import RomancistaFactory
 
-def test_post_livro_deve_receber_status_201_created(client, token):
+
+def test_post_livro_deve_receber_status_201_created(client, token, romancista):
     response = client.post(
         '/livro',
         headers={'Authorization': f'Bearer {token}'},
@@ -51,7 +53,12 @@ def test_delete_livro(client, book_1, token):
     assert response.json() == {'message': 'Livro deletado do MADR'}
 
 
-def test_get_filtro_de_livros(client, token):
+def test_get_filtro_de_livros(client, token, session):
+    # Criando 3 romancistas, para tornar possível a
+    # adição de livros com romancista_id variando de
+    # 1 a 3 (constraint de foreign key do postgres)
+    session.bulk_save_objects(RomancistaFactory.create_batch(3))
+
     client.post(
         '/livro',
         headers={'Authorization': f'Bearer {token}'},
