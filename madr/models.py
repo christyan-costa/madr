@@ -34,7 +34,7 @@ class Romancista:
     __tablename__ = 'romancistas'
 
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
-    name: Mapped[int] = mapped_column(unique=True)
+    name: Mapped[str] = mapped_column(unique=True)
 
     livros: Mapped[list['Book']] = relationship(
         init=False, back_populates='romancistas', cascade='all, delete-orphan'
