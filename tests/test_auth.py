@@ -38,3 +38,15 @@ def test_token_nonexistent_user(client):
     )
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert response.json() == {'detail': 'Email ou senha incorretos'}
+
+
+def test_token_refresh(client, token):
+    response = client.post(
+        '/auth/refresh_token', headers={'Authorization': f'Bearer {token}'}
+    )
+
+    data = response.json()
+
+    assert response.status_code == HTTPStatus.OK
+    assert 'access_token' in data
+    assert data['token_type'] == 'bearer'
